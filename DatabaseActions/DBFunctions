@@ -1,0 +1,207 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+
+public class DBFunctions
+{
+    public static void InsertContent(string title, string type, string link, string picture, string userID)
+    {
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string insert = " INSERT INTO ContentItem([Title], [Type], [Link], [Picture], [UserID])" +
+            " VALUES('" + title + "','" + type + "','" + link + "','" + picture + "','" + userID + "')";
+        SqlCommand cmd = new SqlCommand(insert, conn);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+    }
+
+    public static void InsertUser(string firstName, string familyName, string gender, string email, string region, string dateOfBirth, string userName, string password)
+    {
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string insert = " INSERT INTO Users([FirstName], [FamilyName], [Gender], [Email], [Region], [DateOfBirth], [UserName], [Password])" +
+            " VALUES('" + firstName + "','" + familyName + "','" + gender + "','" + email + "','" + region + "','" + dateOfBirth + "','" + userName + "','" + password + "')";
+        SqlCommand cmd = new SqlCommand(insert, conn);
+        cmd.ExecuteNonQuery();
+        conn.Close();
+    }
+
+    public static int CountItems()
+    {
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string count = "SELECT COUNT (*) FROM ContentItem";
+        SqlCommand cmd = new SqlCommand(count, conn);
+        int recordsCount = (int)cmd.ExecuteScalar();
+        return recordsCount;
+    }
+
+    public static int CountUsers()
+    {
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string count = "SELECT COUNT (*) FROM Users";
+        SqlCommand cmd = new SqlCommand(count, conn);
+        int recordsCount = (int)cmd.ExecuteScalar();
+        return recordsCount;
+    }
+
+    public static int CountMatchedUsersByUserName(string userName)
+    {
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string count = "SELECT COUNT(UserName) FROM Users WHERE[UserName] = '" + userName + "'";
+        SqlCommand cmd = new SqlCommand(count, conn);
+        int recordsCount = (int)cmd.ExecuteScalar();
+        return recordsCount;
+    }
+
+    public static int TryLogin(string userName, string password)
+    {
+        if (CountMatchedUsersByUserNameAndPassword(userName, password) > 0)
+        {
+            SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+            conn.Open();
+            string select = "SELECT [Id] FROM Users WHERE [UserName] = '" + userName + "'" + "AND [Password] = '" + password + "'";
+            SqlCommand cmd = new SqlCommand(select, conn);
+            SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+                return Convert.ToInt32(reader["Id"]);
+            else
+                return -1;
+        }
+        else
+            return -1;
+    }
+
+    public static string GetFullNameByUserId(int userId)
+    {
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string select = "SELECT [FirstName],[FamilyName] FROM Users WHERE [Id] = '" + userId.ToString() + "'";
+        SqlCommand cmd = new SqlCommand(select, conn);
+        SqlDataReader reader = cmd.ExecuteReader();
+        if (reader.Read())
+            return reader["FirstName"].ToString() + " " + reader["FamilyName"].ToString();
+        else
+            return "User ID not found";
+    }
+
+    public static bool UserNameExists(string userName)
+    {
+        return CountMatchedUsersByUserName(userName) > 0;
+    }
+
+    public static int CountMatchedUsersByUserNameAndPassword(string userName, string password)
+    {
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string count = "SELECT COUNT(UserName) FROM Users WHERE [UserName] = '" + userName + "'" + "AND [Password] = '" + password + "'";
+        SqlCommand cmd = new SqlCommand(count, conn);
+        int recordsCount = (int)cmd.ExecuteScalar();
+        return recordsCount;
+    }
+
+    public static object[] SelectAllContents()
+    {
+        object[] contentArr = new object[CountItems()];
+        string[,] userNamesArr = SelectAllUserNames();
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string select = "SELECT [Title],[Type],[Link],[Picture],[UserID]  FROM ContentItem";
+        SqlCommand cmd = new SqlCommand(select, conn);
+        SqlDataReader reader = cmd.ExecuteReader();
+        for (int i = 0; i < contentArr.Length; i++)
+        {
+            if (reader.Read()) // נקראה רשומה נוספת
+            {
+                string id = reader["UserID"].ToString();
+                int pos = 0;
+                bool found = false;
+                string fullName = "";
+                while (pos < userNamesArr.GetLength(1) && !found)
+                {
+                    if (userNamesArr[0, pos] == id)
+                    {
+                        fullName = userNamesArr[1, pos];
+                        found = true;
+                    }
+                    pos++;
+                }
+
+                contentArr[i] = new { Title = reader["Title"].ToString(), Type = reader["Type"].ToString(), Link = reader["Link"].ToString(), Picture = reader["Picture"].ToString(), UserID = fullName };
+            }
+            else
+                i = contentArr.Length;
+        }
+        conn.Close();
+        for (int i = 0; i < contentArr.Length; i++)
+            Console.WriteLine(contentArr[i]);
+        return contentArr;
+    }
+
+    public static object[] SelectAllUsers()
+    {
+        object[] usersArr = new object[CountUsers()];
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string select = "SELECT [FirstName],[FamilyName],[Gender],[Email],[Region],[DateOfBirth],[UserName],[Password]  FROM Users";
+        SqlCommand cmd = new SqlCommand(select, conn);
+        SqlDataReader reader = cmd.ExecuteReader();
+
+        for (int i = 0; i < usersArr.Length; i++)
+        {
+            if (reader.Read()) // נקראה רשומה נוספת
+                usersArr[i] = new { FirstName = reader["FirstName"].ToString(), FamilyName = reader["FamilyName"].ToString(), Gender = reader["Gender"].ToString(), Email = reader["Email"].ToString(), Region = reader["Region"].ToString(), DateOfBirth = reader["DateOfBirth"].ToString(), UserName = reader["UserName"].ToString(), Password = reader["Password"].ToString() };
+            else
+                i = usersArr.Length;
+        }
+        conn.Close();
+        for (int i = 0; i < usersArr.Length; i++)
+            Console.WriteLine(usersArr[i]);
+        return usersArr;
+    }
+
+    public static string[,] SelectAllUserNames()
+    {
+        string[,] userNamesArr = new string[2, CountUsers()];
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string select = "SELECT [Id], [FirstName], [FamilyName] FROM Users";
+        SqlCommand cmd = new SqlCommand(select, conn);
+        SqlDataReader reader = cmd.ExecuteReader();
+
+        for (int i = 0; i < userNamesArr.Length; i++)
+        {
+            if (reader.Read()) // נקראה רשומה נוספת
+            {
+                userNamesArr[0, i] = reader["Id"].ToString();
+                userNamesArr[1, i] = reader["FirstName"].ToString() + "\n" + reader["FamilyName"].ToString();
+            }
+            else
+                i = userNamesArr.Length;
+        }
+        conn.Close();
+        return userNamesArr;
+    }
+
+    public static string SelectFullNameByUserNameAndPassword(string userName, string password)
+    {
+        SqlConnection conn = new SqlConnection(@"Data Source = (localdb)\ProjectModels; Initial Catalog = TripsDB;");
+        conn.Open();
+        string select = "SELECT [FirstName],[FamilyName] FROM Users WHERE [UserName] = '" + userName + "'" + "AND [Password] = '" + password + "'";
+        SqlCommand cmd = new SqlCommand(select, conn);
+        SqlDataReader reader = cmd.ExecuteReader();
+        string fullName = "";
+        if (reader.Read())
+            fullName = reader["FirstName"].ToString() + " " + reader["FamilyName"].ToString();
+        else
+            fullName = "User not exists";
+        conn.Close();
+        return fullName;
+    }
+}
+

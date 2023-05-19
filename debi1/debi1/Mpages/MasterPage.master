@@ -1,0 +1,47 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="MasterPage.master.cs" Inherits="Mpages_MasterPage" %>
+
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+
+    <title>instrusell</title>
+    <link href="../Styles/registaration.css" rel="stylesheet" />
+    <script src="../Scripts/MasterPage.js"></script>
+    <asp:ContentPlaceHolder id="phHead" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body>
+
+    <h1 class="title1">Instrusell🎼</h1>
+    <img class="Mylogo"  src="../Images/logo.png" /> 
+    <table class="tablep01" cellspacing="10" align="right" border="1" dir="rtl">
+
+        <tr>
+            <td class="text" colspan="2">
+               <a href="../aspx/home.aspx">דף הבית ♥</a>
+                <a href="../aspx/registaration.aspx">||   דף הרשמה ♥</a>
+                <a href="../aspx/creat.aspx">||   דף יצירת תוכן ♥</a>
+                <a href="../aspx/shardcontant.aspx">||     דף תכנים משותפים♥</a>  
+            </td>
+        </tr>
+        <tr>
+            <td>
+                &nbsp;
+            </td>
+        </tr>
+        <tr>
+            <td>
+    
+                <div>
+                    <asp:ContentPlaceHolder id="phBody" runat="server">
+        
+                    </asp:ContentPlaceHolder>
+                </div>
+            </td>
+        </tr>
+
+    </table>
+
+</body>
+</html>

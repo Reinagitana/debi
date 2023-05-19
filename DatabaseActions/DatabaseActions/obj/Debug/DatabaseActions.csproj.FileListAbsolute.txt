@@ -1,0 +1,8 @@
+C:\Users\User\source\repos\DatabaseActions\DatabaseActions\bin\Debug\DatabaseActions.exe.config
+C:\Users\User\source\repos\DatabaseActions\DatabaseActions\bin\Debug\DatabaseActions.exe
+C:\Users\User\source\repos\DatabaseActions\DatabaseActions\bin\Debug\DatabaseActions.pdb
+C:\Users\User\source\repos\DatabaseActions\DatabaseActions\obj\Debug\DatabaseActions.csproj.AssemblyReference.cache
+C:\Users\User\source\repos\DatabaseActions\DatabaseActions\obj\Debug\DatabaseActions.csproj.SuggestedBindingRedirects.cache
+C:\Users\User\source\repos\DatabaseActions\DatabaseActions\obj\Debug\DatabaseActions.csproj.CoreCompileInputs.cache
+C:\Users\User\source\repos\DatabaseActions\DatabaseActions\obj\Debug\DatabaseActions.exe
+C:\Users\User\source\repos\DatabaseActions\DatabaseActions\obj\Debug\DatabaseActions.pdb
